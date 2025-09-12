@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}Risk Detayı · {{ r.title }}{% endblock %}
+{% block content %}
+
+<div class="grid grid-2">
+  <!-- SOL: RİSK KARTI -->
+  <div class="card">
+    <h2>{{ r.title }}</h2>
+    {% if consensus %}
+      <div class="flash info">
+        🔔 Konsensüs: P={{ consensus.p }}, Ş={{ consensus.s }} ({{ consensus.count }} oy, eşik {{ threshold }})
+      </div>
+    {% endif %}
+
+    <form method="post" class="grid grid-2">
+      <div>
+        <label>Başlık</label>
+        <input class="input" name="title" value="{{ r.title }}">
+      </div>
+      <div>
+        <label>Kategori</label>
+        <input class="input" name="category" value="{{ r.category or '' }}">
+      </div>
+
+      <div>
+        <label>Durum</label>
+        <select class="input" name="status">
+          {% for s in ['Open','Assessed','Mitigating','Closed'] %}
+            <option value="{{ s }}" {{ 'selected' if r.status==s }}>{{ s }}</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div>
+        <label>Risk Tipi</label>
+        <select class="input" name="risk_type">
+          <option value="" {{ 'selected' if not r.risk_type }}>—</option>
+          <option value="product" {{ 'selected' if r.risk_type=='product' }}>Ürün</option>
+          <option value="project" {{ 'selected' if r.risk_type=='project' }}>Proje</option>
+        </select>
+      </div>
+
+      <div>
+        <label>Sorumlu</label>
+        <input class="input" name="responsible" value="{{ r.responsible or '' }}">
+      </div>
+
+      <div style="grid-column:1/-1">
+        <label>Açıklama</label>
+        <textarea class="input" name="description" rows="3">{{ r.description or '' }}</textarea>
+      </div>
+
+      <div style="grid-column:1/-1">
+        <label>Önlemler (Mitigation)</label>
+        <textarea class="input" name="mitigation" rows="3">{{ r.mitigation or '' }}</textarea>
+      </div>
+
+      <div style="grid-column:1/-1; display:flex; gap:8px; justify-content:flex-end">
+        <button class="btn btn-primary">Kaydet</button>
+      </div>
+    </form>
+  </div>
+
+  <!-- SAĞ: DEĞERLENDİRMELER -->
+  <div class="card">
+    <h3>Değerlendirmeler</h3>
+
+    <!-- RPN Özeti -->
+    <div class="grid grid-2" style="margin-bottom:10px">
+      <div>
+        <div class="small">Ortalama P / S / D</div>
+        <strong>
+          P={{ '%.1f'|format(r.avg_prob() or 0) }},
+          S={{ '%.1f'|format(r.avg_sev() or 0) }},
+          D={{ '%.1f'|format(r.avg_det() or 0) if r.avg_det() is not none else '—' }}
+        </strong>
+      </div>
+      <div>
+        <div class="small">RPN</div>
+        {% set grade, color = r.rpn_grade() %}
+        {% if r.rpn() %}
+          <span class="badge">{{ '%.2f'|format(r.rpn()) }} · {{ grade }}</span>
+        {% else %}
+          —
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Değerlendirme Formu -->
+    <form method="post" action="{{ url_for('add_eval', risk_id=r.id) }}" class="grid">
+      <div class="grid grid-3">
+        <div>
+          <label>Olasılık (P)</label>
+          <select class="input" name="probability">
+            {% for i in range(1,6) %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>Şiddet (S)</label>
+          <select class="input" name="severity">
+            {% for i in range(1,6) %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
+          </select>
+        </div>
+        <div>
+          <label>Tespit (D)</label>
+          <select class="input" name="detection">
+            <option value="">—</option>
+            {% for i in range(1,6) %}<option value="{{ i }}">{{ i }}</option>{% endfor %}
+          </select>
+        </div>
+      </div>
+
+      <input class="input" name="evaluator" placeholder="Değerlendiren (opsiyonel)">
+      <input class="input" name="comment" placeholder="Yorum (opsiyonel)">
+      <button class="btn btn-success">Değerlendirmeyi Ekle</button>
+    </form>
+
+    <!-- Değerlendirme Tablosu -->
+    <table class="table" style="margin-top:10px">
+      <thead>
+        <tr>
+          <th>Tarih</th><th>Değerlendiren</th><th>P</th><th>Ş</th><th>D</th><th>RPN</th><th>Yorum</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for e in r.evaluations|sort(attribute='id', reverse=True) %}
+          <tr>
+            <td>{{ e.created_at.strftime('%Y-%m-%d %H:%M') if e.created_at else '-' }}</td>
+            <td>{{ e.evaluator or '-' }}</td>
+            <td>{{ e.probability }}</td>
+            <td>{{ e.severity }}</td>
+            <td>{{ e.detection if e.detection is not none else '—' }}</td>
+            <td>{{ e.rpn() if e.rpn() is not none else '—' }}</td>
+            <td>{{ e.comment or '-' }}</td>
+          </tr>
+        {% else %}
+          <tr><td colspan="7">Henüz değerlendirme yok.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ALT: YORUMLAR -->
+  <div class="card" style="grid-column:1/-1">
+    <h3>Yorumlar</h3>
+    <div class="grid">
+      {% for c in r.comments|sort(attribute='id', reverse=True) %}
+        <div class="comment {% if c.is_system %}system{% endif %}">
+          <div style="display:flex;justify-content:space-between;gap:8px">
+            <strong>{% if c.is_system %}Sistem{% else %}Kullanıcı{% endif %}</strong>
+            <span class="small">
+              {{ c.created_at.strftime('%Y-%m-%d') if c.created_at else '' }}
+              ·
+              {{ c.created_at.strftime('%H:%M') if c.created_at else '' }}
+            </span>
+          </div>
+          <div>{{ c.text }}</div>
+        </div>
+      {% else %}
+        <div class="small">Yorum yok.</div>
+      {% endfor %}
+    </div>
+
+    <form method="post" action="{{ url_for('add_comment', risk_id=r.id) }}" style="margin-top:12px">
+      <label>Yeni Yorum</label>
+      <textarea class="input" name="text" rows="2" placeholder="Güncelleme veya not girin"></textarea>
+      <div style="display:flex;justify-content:flex-end;margin-top:8px">
+        <button class="btn">Yorum Ekle</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+{% if suggestions and suggestions|length %}
+  <div class="card" style="margin-top:12px">
+    <h3>Öneriler ({{ r.category }})</h3>
+    <ul>
+      {% for s in suggestions %}
+        <li>{{ s.text }}</li>
+      {% endfor %}
+    </ul>
+  </div>
+{% endif %}
+
+{% endblock %}

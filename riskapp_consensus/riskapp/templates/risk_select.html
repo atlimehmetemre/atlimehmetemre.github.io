@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Risk Seçimi · Risk Yönetim{% endblock %}
+{% block content %}
+<div class="card">
+  <h3>Riskler</h3>
+  <form class="searchbar" method="get">
+    <input class="input" name="q" value="{{ q }}" placeholder="Ara (başlık/kategori/açıklama)">
+    <button class="btn" type="submit">Ara</button>
+  </form>
+  <table class="table" style="margin-top:10px">
+    <thead><tr><th>Başlık</th><th>Kategori</th><th>Skor</th><th>Güncel</th></tr></thead>
+    <tbody>
+      {% for r in risks %}
+      <tr>
+        <td><a href="{{ url_for('risk_detail', risk_id=r.id) }}">{{ r.title }}</a></td>
+        <td>{{ r.category or "-" }}</td>
+        <td>{% if r.score() %}{{ r.score() }}{% else %}—{% endif %}</td>
+        <td>{{ r.updated_at.strftime("%Y-%m-%d %H:%M") }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

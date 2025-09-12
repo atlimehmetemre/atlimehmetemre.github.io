@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}Yeni Risk{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>Yeni Risk</h2>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for c,m in messages %}
+      <div class="flash {{ c }}">{{ m }}</div>
+    {% endfor %}
+  {% endwith %}
+
+  <form method="post" class="grid grid-2">
+    <!-- Başlık -->
+    <div>
+      <label>Başlık</label>
+      <input class="input" name="title" value="{{ form.title if form else '' }}" required>
+    </div>
+
+    <!-- Kategori -->
+    <div>
+      <label>Kategori</label>
+      <input class="input" name="category" value="{{ form.category if form else '' }}" placeholder="örn. İş güvenliği">
+    </div>
+
+    <!-- Risk Tipi -->
+    <div>
+      <label>Risk Tipi</label>
+      <select class="input" name="risk_type">
+        <option value=""  {% if not form or not form.risk_type %}selected{% endif %}>—</option>
+        <option value="product" {% if form and form.risk_type == 'product' %}selected{% endif %}>Ürün Riski</option>
+        <option value="project" {% if form and form.risk_type == 'project' %}selected{% endif %}>Proje Riski</option>
+      </select>
+    </div>
+
+    <!-- Sorumlu -->
+    <div>
+      <label>Sorumlu</label>
+      <input class="input" name="responsible" value="{{ form.responsible if form else '' }}" placeholder="Ad Soyad">
+    </div>
+
+    <!-- Olasılık -->
+    <div>
+      <label>Olasılık (P · 1–5)</label>
+      <select class="input" name="probability">
+        {% for i in range(1,6) %}
+          <option value="{{ i }}" {% if form and form.probability and form.probability|int == i %}selected{% endif %}>{{ i }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Şiddet -->
+    <div>
+      <label>Şiddet (S · 1–5)</label>
+      <select class="input" name="severity">
+        {% for i in range(1,6) %}
+          <option value="{{ i }}" {% if form and form.severity and form.severity|int == i %}selected{% endif %}>{{ i }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Detection -->
+    <div>
+      <label>Detection (D · 1–5) <span class="small">(opsiyonel)</span></label>
+      <select class="input" name="detection">
+        <option value="" {% if not form or not form.detection %}selected{% endif %}>—</option>
+        {% for i in range(1,6) %}
+          <option value="{{ i }}" {% if form and form.detection and form.detection|int == i %}selected{% endif %}>{{ i }}</option>
+        {% endfor %}
+      </select>
+    </div>
+
+    <!-- Açıklama ve Mitigation -->
+    <div class="grid-2" style="grid-column:1/-1; display:grid; gap:16px">
+      <div>
+        <label>Açıklama</label>
+        <textarea class="input" name="description" rows="4" placeholder="Riski tanımlayın">{{ form.description if form else '' }}</textarea>
+      </div>
+      <div>
+        <label>Önlemler (Mitigation)</label>
+        <textarea class="input" name="mitigation" rows="4" placeholder="Önerilen faaliyetler">{{ form.mitigation if form else '' }}</textarea>
+      </div>
+    </div>
+
+    <!-- Butonlar -->
+    <div style="grid-column:1/-1; display:flex; gap:8px; justify-content:flex-end">
+      <a class="btn" href="{{ url_for('risk_select') }}">İptal</a>
+      <button class="btn btn-primary">Oluştur</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

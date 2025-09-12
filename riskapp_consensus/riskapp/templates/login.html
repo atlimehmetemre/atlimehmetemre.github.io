@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Giriş</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <div class="container" style="max-width:420px">
+    <div class="card">
+      <h2>Giriş</h2>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          {% for cat, msg in messages %}
+            <div class="flash {{cat}}">{{ msg }}</div>
+          {% endfor %}
+        {% endif %}
+      {% endwith %}
+
+      <form method="post">
+        <label>E-posta</label>
+        <input class="input" type="email" name="email" placeholder="ornek@firma.com" value="{{ email or '' }}" required>
+
+        <label>Şifre</label>
+        <input class="input" type="password" name="password" placeholder="••••••••" required>
+
+        <div style="margin-top:12px;display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap">
+          <a class="btn" href="{{ url_for('setup_step1') }}">Hesabın yok mu? Kayıt ol</a>
+          <a class="btn" href="{{ url_for('forgot_password') }}">Şifremi unuttum</a>
+          <button class="btn btn-primary" type="submit" style="margin-left:auto">Giriş yap</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</body>
+</html>

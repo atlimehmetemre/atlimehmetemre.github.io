@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Kullanıcı Yönetimi{% endblock %}
+{% block content %}
+<div class="container">
+  <div class="card">
+    <h2>Kullanıcı Yönetimi</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for c,m in messages %}<div class="flash {{c}}">{{m}}</div>{% endfor %}
+    {% endwith %}
+
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Ad Soyad</th>
+          <th>E-posta</th>
+          <th>Ünvan</th>
+          <th>Rol</th>
+          <th style="width:240px">İşlem</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for u in users %}
+          <tr>
+            <td>{{ u.contact_name }}</td>
+            <td>{{ u.email }}</td>
+            <td>{{ u.contact_title or '-' }}</td>
+            <td><span class="badge">{{ u.role or 'uzman' }}</span></td>
+            <td>
+              <form method="post" style="display:flex; gap:8px; align-items:center">
+                <input type="hidden" name="user_id" value="{{ u.id }}">
+                <select name="new_role" class="input">
+                  <option value="uzman" {{ 'selected' if (u.role or 'uzman')=='uzman' }}>uzman</option>
+                  <option value="admin" {{ 'selected' if u.role=='admin' }}>admin</option>
+                </select>
+                <button class="btn btn-primary">Güncelle</button>
+              </form>
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5">Kayıtlı kullanıcı bulunamadı.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    <div class="row" style="margin-top:12px">
+      <a class="btn" href="{{ url_for('dashboard') }}">Geri</a>
+    </div>
+  </div>
+</div>
+{% endblock %}

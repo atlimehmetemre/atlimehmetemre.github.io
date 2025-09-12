@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>Rapor · {{ r.title }}</title>
+  <style>
+    body{font-family:Arial, sans-serif; color:#111; padding:24px}
+    h1,h2,h3{margin:0 0 8px 0}
+    .muted{color:#555}
+    table{border-collapse:collapse;width:100%}
+    th,td{border:1px solid #ddd;padding:8px;text-align:left;vertical-align:top}
+    .badge{display:inline-block;padding:4px 8px;border-radius:8px;border:1px solid #ccc;background:#f5f5f5}
+    .legend thead th{background:#f0f3f7}
+    .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media print {
+      .noprint{display:none}
+      body{padding:0}
+    }
+  </style>
+</head>
+<body>
+  <h1>Risk Raporu</h1>
+  <p class="muted noprint">Yazdırmak için tarayıcıdan “Yazdır”a basın veya aşağıdaki butonu kullanın.</p>
+  <button class="noprint" onclick="window.print()" style="margin:6px 0">Yazdır / PDF Kaydet</button>
+
+  <h2>{{ r.title }}</h2>
+  <p>
+    <strong>Kategori:</strong> {{ r.category or "-" }}
+    · <strong>Durum:</strong> {{ r.status }}
+  </p>
+  <p>{{ r.description or "" }}</p>
+
+  <h3>Özet</h3>
+  <p>
+    Oluşturma: {{ r.created_at.strftime("%Y-%m-%d %H:%M") }}
+    · Güncelleme: {{ r.updated_at.strftime("%Y-%m-%d %H:%M") }}
+  </p>
+
+  <!-- Eski 2D skor (P×Ş) -->
+  <p>
+    <strong>Skor (P×Ş):</strong>
+    {% if r.score() %}<span class="badge">{{ r.score() }}</span>{% else %}—{% endif %}
+    {% if r.evaluations %}
+      ({{ r.evaluations|length }} değerlendirme,
+      ort. P={{ "%.2f"|format(r.avg_prob() or 0) }},
+      Ş={{ "%.2f"|format(r.avg_sev() or 0) }})
+    {% endif %}
+  </p>
+
+  <!-- Yeni RPN (P×Ş×D) özeti -->
+  <div class="grid2" style="margin:10px 0">
+    <div>
+      <div class="muted">Ortalama P / Ş / D</div>
+      <strong>
+        P={{ '%.2f'|format(r.avg_prob() or 0) }},
+        Ş={{ '%.2f'|format(r.avg_sev() or 0) }},
+        D={{ '%.2f'|format(r.avg_det() or 0) if r.avg_det() is not none else '—' }}
+      </strong>
+    </div>
+    <div>
+      <div class="muted">RPN ve Grade</div>
+      {% set grade, color = r.rpn_grade() %}
+      {% if r.rpn() %}
+        <span class="badge">{{ '%.2f'|format(r.rpn()) }} · {{ grade }}</span>
+      {% else %}
+        —
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Acceptability tablosu -->
+  <h3>Acceptability & Grade of Risks</h3>
+  <table class="legend" style="margin:8px 0 12px">
+    <thead>
+      <tr><th>RPN Aralığı</th><th>RPN Grade</th><th>Acceptability</th></tr>
+    </thead>
+    <tbody>
+      <tr style="background:#ffd8d6"><td>≥ 80</td><td>Critical</td><td>Unacceptable</td></tr>
+      <tr style="background:#fff5cc"><td>40 – 79</td><td>Moderate</td><td>Monitor</td></tr>
+      <tr style="background:#dff6dd"><td>&lt; 40</td><td>Acceptable</td><td>OK</td></tr>
+    </tbody>
+  </table>
+
+  <h3>Değerlendirmeler</h3>
+  <table>
+    <thead>
+      <tr>
+        <th>Tarih</th>
+        <th>Değerlendiren</th>
+        <th>Olasılık (P)</th>
+        <th>Şiddet (Ş)</th>
+        <th>Tespit (D)</th>
+        <th>RPN</th>
+        <th>Yorum</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for e in r.evaluations|sort(attribute='created_at', reverse=True) %}
+        <tr>
+          <td>{{ e.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td>{{ e.evaluator or "-" }}</td>
+          <td>{{ e.probability }}</td>
+          <td>{{ e.severity }}</td>
+          <td>{{ e.detection if e.detection is not none else "—" }}</td>
+          <td>{{ e.rpn() if e.rpn() is not none else "—" }}</td>
+          <td>{{ e.comment or "" }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+  <h3>Karar Destek Önerileri</h3>
+  {% if suggestions %}
+    <ul>
+      {% for s in suggestions %}<li>{{ s.text }}</li>{% endfor %}
+    </ul>
+  {% else %}
+    <p>Bu kategori için öneri bulunamadı.</p>
+  {% endif %}
+
+  <h3>Yorum Günlüğü</h3>
+  <table>
+    <thead><tr><th>Tarih</th><th>Tür</th><th>Metin</th></tr></thead>
+    <tbody>
+      {% for c in r.comments|sort(attribute='created_at', reverse=True) %}
+        <tr>
+          <td>{{ c.created_at.strftime("%Y-%m-%d %H:%M") }}</td>
+          <td>{{ "Sistem" if c.is_system else "Kullanıcı" }}</td>
+          <td>{{ c.text }}</td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</body>
+</html>

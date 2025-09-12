@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}MENÜ · Lütfen Giriş Bilgilerini Girin{% endblock %}
+{% block content %}
+<div class="wizard">
+  <div class="panel">
+    <div class="panel-head">MENÜ</div>
+    <div class="panel-sub">LÜTFEN GİRİŞ BİLGİLERİNİ GİRİN</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        <ul class="flashes">
+        {% for category, message in messages %}
+          <li class="flash {{ category }}">{{ message }}</li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" class="form">
+      <label>LİSAN</label>
+      <select class="input" name="language">
+        <option value="Türkçe" {% if form and form.language=="Türkçe" %}selected{% endif %}>Türkçe</option>
+        <option value="English" {% if form and form.language=="English" %}selected{% endif %}>English</option>
+      </select>
+
+      <label>YETKİLİ KİŞİ</label>
+      <input class="input" name="contact_name" placeholder="örn. Saha Mühendisi"
+             value="{{ form.contact_name if form else '' }}">
+
+      <label>YETKİLİ ÜNVANI</label>
+      <input class="input" name="contact_title" placeholder="örn. İSG Uzmanı"
+             value="{{ form.contact_title if form else '' }}">
+
+      <label>YETKİLİ E-POSTA ADRESİ</label>
+      <input class="input" type="email" name="email" placeholder="ornek@firma.com"
+             value="{{ form.email if form else '' }}">
+
+      <label>YETKİLİ ŞİFRESİ</label>
+      <input class="input" type="password" name="password" placeholder="••••••••">
+
+      <div class="row">
+        <a class="btn" href="{{ url_for('welcome') }}">GERİ</a>
+        <div style="flex:1"></div>
+        <button class="btn btn-success" type="submit">KAYIT OL</button>
+        <a class="btn btn-primary" href="{{ url_for('login') }}">GİRİŞ YAP</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

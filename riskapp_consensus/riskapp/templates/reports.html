@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Raporlar · Risk Yönetim{% endblock %}
+{% block content %}
+<div class="card">
+  <h3>Raporlar</h3>
+  <table class="table">
+    <thead><tr><th>Risk</th><th>Kategori</th><th>Skor</th><th></th></tr></thead>
+    <tbody>
+      {% for r in risks %}
+      <tr>
+        <td>{{ r.title }}</td>
+        <td>{{ r.category or "-" }}</td>
+        <td>{% if r.score() %}{{ r.score() }}{% else %}—{% endif %}</td>
+        <td><a class="btn" href="{{ url_for('report_view', risk_id=r.id) }}">Görüntüle</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
