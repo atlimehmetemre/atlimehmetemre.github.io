@@ -1,0 +1,118 @@
+{% extends "base.html" %}
+{% block title %}Risk Tanımlama{% endblock %}
+{% block content %}
+
+<!-- Tanımlı risklerden seç -->
+<div class="card">
+  <h2>Tanımlı Risklerden Seç</h2>
+
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% for c,m in messages %}<div class="flash {{c}}">{{m}}</div>{% endfor %}
+  {% endwith %}
+
+  <form method="post" id="select-form">
+    <!-- Enter ile submit edilse bile action gelsin -->
+    <input type="hidden" name="action" value="add_selected">
+
+    {% for cat, risks in categories.items() %}
+      {% set cat_idx = loop.index0 %}
+      <h3 style="margin-top:12px">
+        {{ cat }}
+        <span class="small" id="count-{{ cat_idx }}">(0 seçili)</span>
+      </h3>
+
+      <div class="small" style="margin:6px 0;">
+        <label style="cursor:pointer;">
+          <input type="checkbox" class="toggle-all" data-group="{{ cat_idx }}">
+          Tümünü seç / kaldır
+        </label>
+      </div>
+
+      <table class="table">
+        <tr>
+          <th style="width:70px">Seç</th>
+          <th>Risk</th>
+        </tr>
+        {% for s in risks %}
+          {% set row_idx = loop.index0 %}
+          {% set cb_id = 'sel-' ~ cat_idx ~ '-' ~ row_idx %}
+          <tr>
+            <td>
+              <input
+                id="{{ cb_id }}"
+                type="checkbox"
+                name="selected"
+                value="{{ s.id }}"
+                class="chk chk-{{ cat_idx }}"
+                data-group="{{ cat_idx }}"
+              >
+            </td>
+            <td>
+              <label for="{{ cb_id }}">{{ s.text }}</label>
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+    {% endfor %}
+
+    <button type="submit" class="btn btn-success">
+      Seçilenleri Ekle
+    </button>
+  </form>
+</div>
+
+<!-- Yeni şablon ekle -->
+<div class="card" style="margin-top:16px">
+  <h2>Yeni Risk Şablonu Ekle</h2>
+  <form method="post" class="grid grid-2">
+    <div>
+      <label>Yeni Kategori</label>
+      <input class="input" name="new_category" placeholder="örn. İnsan / Teknik / Süreç" required>
+    </div>
+    <div>
+      <label>Risk Metni</label>
+      <input class="input" name="new_text" placeholder="Risk açıklaması" required>
+    </div>
+    <div style="grid-column:1/-1">
+      <button type="submit" name="action" value="add_suggestion" class="btn btn-primary">
+        Şablon Ekle
+      </button>
+    </div>
+  </form>
+  <p class="small" style="margin-top:8px;color:#a3b5c3">
+    Buraya eklediklerin üstte kategori altında listelenir; ileride tek tıkla risk olarak ekleyebilirsin.
+  </p>
+</div>
+
+<!-- Basit JS: kategori bazında toplu seç ve sayaç -->
+<script>
+  (function(){
+    function updateCount(groupIdx){
+      const boxes = document.querySelectorAll('.chk-' + groupIdx);
+      const sel = Array.from(boxes).filter(b => b.checked).length;
+      const el = document.getElementById('count-' + groupIdx);
+      if(el) el.textContent = `(${sel} seçili)`;
+    }
+
+    // toggle all
+    document.querySelectorAll('.toggle-all').forEach(tg => {
+      tg.addEventListener('change', function(){
+        const g = this.getAttribute('data-group');
+        document.querySelectorAll('.chk-' + g).forEach(c => { c.checked = tg.checked; });
+        updateCount(g);
+      });
+    });
+
+    // individual change -> update count
+    document.querySelectorAll('.chk').forEach(c => {
+      c.addEventListener('change', function(){
+        updateCount(this.getAttribute('data-group'));
+      });
+    });
+
+    // ilk yüklemede sayaçları sıfırla
+    document.querySelectorAll('.toggle-all').forEach(tg => updateCount(tg.getAttribute('data-group')));
+  })();
+</script>
+
+{% endblock %}

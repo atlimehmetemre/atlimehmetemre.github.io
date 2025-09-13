@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}Dashboard · Risk Yönetim{% endblock %}
+{% block content %}
+<div class="grid grid-2">
+  <div class="card">
+    <h3>Genel Görünüm</h3>
+    <table class="table">
+      <thead><tr><th>Başlık</th><th>Kategori</th><th>Skor</th><th>Durum</th></tr></thead>
+      <tbody>
+        {% for r in risks[:8] %}
+        <tr>
+          <td><a href="{{ url_for('risk_detail', risk_id=r.id) }}">{{ r.title }}</a></td>
+          <td>{{ r.category or "-" }}</td>
+          <td>
+            {% if r.score() %}
+              {% set sc = r.score() %}
+              <span class="badge {% if sc<10 %}score-low{% elif sc<16 %}score-mid{% else %}score-high{% endif %}">{{ sc }}</span>
+            {% else %}<span class="badge">—</span>{% endif %}
+          </td>
+          <td>{{ r.status }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <div class="small">Son güncellenen 8 risk gösteriliyor. Tümü için “Riskler” sayfasına gidin.</div>
+  </div>
+  <div class="card">
+    <h3>Risk Matrisi (Olasılık × Şiddet)</h3>
+    <div class="matrix">
+      {% for s in range(5,0,-1) %}
+        {% for p in range(1,6) %}
+          {% set count = matrix[5-s][p-1] %}
+          {% set score = p * s %}
+          <div class="cell" title="Skor {{score}}">{{ score }}<br/><span class="small">{{ count }} adet</span></div>
+        {% endfor %}
+      {% endfor %}
+    </div>
+    <div class="small" style="margin-top:6px;">Kutu içindeki sayı skor; alttaki sayı o hücredeki risk adedi.</div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block title %}Risk Mitigation{% endblock %}
+{% block content %}
+
+<div class="card">
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+    <div>
+      <h2 style="margin:0 0 6px">Risk Mitigation Form</h2>
+      <a href="{{ url_for('risk_new') }}">+ Click here to add new Risk Mitigation</a>
+    </div>
+
+    <form method="get" class="searchbar" style="display:flex;gap:8px;flex-wrap:wrap">
+      <input class="input" name="q" placeholder="Ara (başlık/kategori/açıklama)" value="{{ q or '' }}">
+      <select class="input" name="status" style="max-width:180px">
+        <option value="">Tümü (durum)</option>
+        <option value="New"      {{ 'selected' if status=='New' else '' }}>New</option>
+        <option value="Assessed" {{ 'selected' if status=='Assessed' else '' }}>Assessed</option>
+        <option value="Open"     {{ 'selected' if status=='Open' else '' }}>Open</option>
+        <option value="Closed"   {{ 'selected' if status=='Closed' else '' }}>Closed</option>
+      </select>
+      <button class="btn btn-primary" type="submit">Filtrele</button>
+      <!-- CSV Export -->
+      <a class="btn" href="{{ url_for('risks_export_csv', q=q, status=status) }}">⬇️ CSV indir</a>
+    </form>
+  </div>
+
+  <h3 style="margin-top:14px">Recent Risk Mitigation Report</h3>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th style="width:60px">No.</th>
+        <th>Report Date</th>
+        <th>Assessed Date</th>
+        <th style="width:90px">Report ID</th>
+        <th style="width:120px">Status</th>
+        <th>Created by</th>
+        <th style="width:90px">RPN</th>
+        <th style="width:120px">Grade</th>
+        <th style="width:110px">Comment</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for r in risks %}
+      {% set g, color = r.rpn_grade() %}
+      <tr>
+        <td>{{ loop.index }}</td>
+        <td>{{ r.created_at.strftime('%Y-%m-%d %H:%M') if r.created_at else '' }}</td>
+        <td>{{ r.updated_at.strftime('%Y-%m-%d %H:%M') if r.updated_at else '' }}</td>
+        <td><a href="{{ url_for('risk_detail', risk_id=r.id) }}">{{ r.id }}</a></td>
+        <td><span class="badge">{{ r.status or 'New' }}</span></td>
+        <td>{{ r.owner or '-' }}</td>
+        <td>
+          {% if r.rpn() %}
+            {{ '%.0f'|format(r.rpn()) }}
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td>
+          {% if g %}
+            <span class="badge">{{ g }}</span>
+          {% else %}
+            —
+          {% endif %}
+        </td>
+        <td>{{ r.comments|length }}</td>
+      </tr>
+      {% else %}
+      <tr><td colspan="9">Kayıt bulunamadı.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% endblock %}

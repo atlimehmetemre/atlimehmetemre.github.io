@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>{% block title %}Risk Yönetim{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="layout">
+  <!-- SOL SİDEBAR -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo">⚠️</div>
+      <div class="title">Risk Yönetim</div>
+    </div>
+
+    {% if session.get('username') %}
+    <div class="userbox">
+      <div class="user">👤 {{ session.get('username') }}</div>
+      <div class="role">{{ session.get('role','uzman') }}</div>
+    </div>
+    {% endif %}
+
+    {% set current = request.endpoint %}
+    <nav class="menu">
+      {% if session.get('username') %}
+        <a class="{{ 'active' if current == 'dashboard' else '' }}" href="{{ url_for('dashboard') }}">Dashboard</a>
+        <a class="{{ 'active' if current == 'risk_new' else '' }}" href="{{ url_for('risk_new') }}">Yeni Risk</a>
+        <a class="{{ 'active' if current == 'risk_select' else '' }}" href="{{ url_for('risk_select') }}">Riskler</a>
+        <a class="btn {{ 'active' if current == 'risk_identify' else '' }}" href="{{ url_for('risk_identify') }}">Risk Tanımlama</a>
+
+        <a class="{{ 'active' if current == 'reports' else '' }}" href="{{ url_for('reports') }}">Raporlar</a>
+        <a class="{{ 'active' if current == 'settings_account' else '' }}" href="{{ url_for('settings_account') }}">Hesap</a>
+        <a class="{{ 'active' if current == 'settings_project' else '' }}" href="{{ url_for('settings_project') }}">Proje</a>
+        {% if session.get('role') == 'admin' %}
+          <a class="{{ 'active' if current == 'admin_users' else '' }}" href="{{ url_for('admin_users') }}">Kullanıcılar</a>
+        {% endif %}
+        <a href="{{ url_for('logout') }}">Çıkış</a>
+      {% else %}
+        <a class="{{ 'active' if current == 'welcome' else '' }}" href="{{ url_for('welcome') }}">Ana Sayfa</a>
+        <a class="{{ 'active' if current == 'login' else '' }}" href="{{ url_for('login') }}">Giriş</a>
+        <a class="{{ 'active' if current in ['setup_step1','setup_step2'] else '' }}" href="{{ url_for('setup_step1') }}">Kayıt Ol</a>
+      {% endif %}
+    </nav>
+
+    <div class="sidebar-footer">v1.0 · {{ session.get('role','guest') }}</div>
+  </aside>
+
+  <!-- SAĞ İÇERİK -->
+  <main class="main">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div class="flash {{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    {% block content %}{% endblock %}
+
+    <footer class="footer">
+      <p>Skor = Olasılık × Şiddet (1–5, max 25). Sistem yorumları düzenleme anında otomatik oluşur.</p>
+    </footer>
+  </main>
+</div>
+
+</body>
+</html>

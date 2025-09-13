@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Proje Ayarları{% endblock %}
+{% block content %}
+<div class="container" style="max-width:640px">
+  <div class="card">
+    <h2>Proje Ayarları</h2>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% for c,m in messages %}<div class="flash {{c}}">{{m}}</div>{% endfor %}
+    {% endwith %}
+
+    <form method="post" class="form">
+      <label>İş Yeri Unvanı</label>
+      <textarea class="input" name="workplace_name" rows="2">{{ (proj.workplace_name if proj else '') }}</textarea>
+
+      <label>İş Yeri Adresi</label>
+      <textarea class="input" name="workplace_address" rows="3">{{ (proj.workplace_address if proj else '') }}</textarea>
+
+      <div class="row" style="margin-top:12px">
+        <a class="btn" href="{{ url_for('dashboard') }}">Geri</a>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary">Kaydet</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

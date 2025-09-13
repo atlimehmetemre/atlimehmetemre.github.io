@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Şifre Sıfırlama{% endblock %}
+{% block content %}
+<div class="wizard">
+  <div class="panel">
+    <div class="panel-head">ŞİFRE SIFIRLAMA</div>
+    <div class="panel-sub">E-posta adresinizi ve yeni şifrenizi girin</div>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}
+        {% for cat, msg in messages %}
+          <div class="flash {{cat}}">{{ msg }}</div>
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+
+    <form method="post" class="form">
+      <label>E-POSTA</label>
+      <input class="input" type="email" name="email" placeholder="ornek@firma.com" value="{{ email or '' }}" required>
+
+      <label>YENİ ŞİFRE</label>
+      <input class="input" type="password" name="new_password" placeholder="Yeni şifre" required>
+
+      <label>YENİ ŞİFRE (TEKRAR)</label>
+      <input class="input" type="password" name="new_password2" placeholder="Yeni şifre tekrar" required>
+
+      <div class="row">
+        <a class="btn" href="{{ url_for('login') }}">Geri</a>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" type="submit">Şifreyi Güncelle</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

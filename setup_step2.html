@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}MENÜ · Lütfen Proje Bilgilerini Girin{% endblock %}
+{% block content %}
+<div class="wizard">
+  <div class="panel">
+    <div class="panel-head">MENÜ</div>
+    <div class="panel-sub">LÜTFEN PROJE BİLGİLERİNİ GİRİN</div>
+
+    <form method="post" class="form">
+      <label>İŞ YERİ UNVANI</label>
+      <textarea class="input" name="workplace_name" rows="2"
+        placeholder="Derebeyi Group Yönetim Limited Şirketi"></textarea>
+
+      <label>İŞ YERİ ADRESİ</label>
+      <textarea class="input" name="workplace_address" rows="3"
+        placeholder="Balıkova Balıkçı Limanı, Urla / İZMİR"></textarea>
+
+      <div class="row">
+        <a class="btn" href="{{ url_for('setup_step1') }}">GERİ</a>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" type="submit">İLERİ</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
