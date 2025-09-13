@@ -1,0 +1,2 @@
+:root{--surface:#0b0f10;--card:#10161a;--fg:#e8eef1;--outline:#1f2a30;--accent:#9cff57}
+*{box-sizing:border-box} body{margin:0;background:var(--surface);color:var(--fg);font:16px/1.6 system-ui,Arial}
